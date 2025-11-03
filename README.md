@@ -65,6 +65,7 @@ Select: React Router v7
 npm install
 npm install -D tw-animate-css
 npm install clsx tailwind-merge pdfjs-dist zustand
+npm install react-dropzone
 
 # 5️⃣ Run the dev server
 npm run dev
