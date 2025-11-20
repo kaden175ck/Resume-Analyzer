@@ -1,0 +1,77 @@
+//Fileuploader 主要用于拖拽和选中pdf文件，upload的子组件，接受一个参数onFileSelect，父组件通过handleFileSelect去修改file状态
+
+import {useState, useCallback} from 'react'
+import {useDropzone} from 'react-dropzone'
+import { formatSize } from '../lib/utils'
+
+interface FileUploaderProps {
+    onFileSelect?: (file: File | null) => void;
+    file?:File | null;
+}
+
+const FileUploader = ({ onFileSelect, file: externalFile }: FileUploaderProps) => {
+
+    const onDrop = useCallback((acceptedFiles: File[]) => {
+        const file = acceptedFiles[0] || null;
+
+        onFileSelect?.(file);
+    }, [onFileSelect]);
+
+    const maxFileSize = 20 * 1024 * 1024; // 20MB in bytes
+
+    const {getRootProps, getInputProps, isDragActive} = useDropzone({
+        onDrop,
+        multiple: false,
+        accept: { 'application/pdf': ['.pdf']},
+        maxSize: maxFileSize,
+    })
+
+    const file = externalFile;
+
+    return (
+        <div className="w-full gradient-border">
+            <div {...getRootProps()}>
+                <input {...getInputProps()} />
+
+                <div className="space-y-4 cursor-pointer">
+                    {file ? (
+                        // 如果有选中的PDF文件，就显示一个PDF图标
+                        // 并且阻止事件继续往上传播用户点击文件信息区域时，不打开文件选择器 
+                        <div className="uploader-selected-file" onClick={(e) => e.stopPropagation()}>
+                            <img src="/images/pdf.png" alt="pdf" className="size-10" />
+                            <div className="flex items-center space-x-3">
+                                <div>
+                                    <p className="text-sm font-medium text-gray-700 truncate max-w-xs">
+                                        {file.name}
+                                    </p>
+                                    <p className="text-sm text-gray-500">
+                                        {formatSize(file.size)}
+                                    </p>
+                                </div>
+                            </div>
+                            <button className="p-2 cursor-pointer" onClick={(e) => {
+                                onFileSelect?.(null)
+                            }}>
+                                <img src="/icons/cross.svg" alt="remove" className="w-4 h-4" />
+                            </button>
+                        </div>
+                    ): (
+                        // 如果没有文件就先展示这个info图标
+                        <div>
+                            <div className="mx-auto w-16 h-16 flex items-center justify-center mb-2">
+                                <img src="/icons/info.svg" alt="upload" className="size-20" />
+                            </div>
+                            <p className="text-lg text-gray-500">
+                                <span className="font-semibold">
+                                    Click to upload
+                                </span> or drag and drop
+                            </p>
+                            <p className="text-lg text-gray-500">PDF (max {formatSize(maxFileSize)})</p>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    )
+}
+export default FileUploader
